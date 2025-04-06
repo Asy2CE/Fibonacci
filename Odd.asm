@@ -1,28 +1,47 @@
 .data
-NUM_IN:    .word  10      # example input n = 10
-ODD_OUT:   .word  0
+m:          .word 10           # Test input 10
+is_odd:     .word 0           
 
-        .text
-        .globl main
+.text
+.globl main
+
 main:
-        lw   $a0, NUM_IN      #Load m
-        jal  Odd              #call Odd(m)
-        sw   $v0, ODD_OUT     #result (0 or 1)
-        li   $v0, 10
-        syscall
+    la $t0, m
+    lw $t1, 0($t0)            # $t1 = m
+
+    li $t2, 2                 # divisor = 2
+    move $a0, $t1             # $a0 = m
+    move $a1, $t2             # $a1 = 2
+    jal division              
+
+    # if m % 2 == 0 → even → store 0
+    # else → odd → store 1
+    li $t3, 1
+    beq $v0, $zero, store_even
+    j store_odd
+
+store_even:
+    li $t4, 0
+    j store_result
+
+store_odd:
+    li $t4, 1
+
+store_result:
+    la $t5, is_odd
+    sw $t4, 0($t5)
 
 
-Odd:
-        li   $t0, 2           # $t0 = 2 (divisor)
-        move $t1, $a0         # $t1 = m (numerator)
-        li   $t2, 0           
-        
+
+division:
+    move $t6, $a0    
+    move $t7, $a1    
+    
 div_loop:
-        blt  $t1, $t0, div_done  
-        sub  $t1, $t1, $t0     
-        addi $t2, $t2, 1         
-        j    div_loop
+    blt $t6, $t7, div_done
+    sub $t6, $t6, $t7
+    j div_loop
 
 div_done:
-        move $v0, $t1         
-        jr   $ra
+    move $v0, $t6     
+    jr $ra
